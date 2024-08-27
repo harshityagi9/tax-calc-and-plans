@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Calculation and Planning</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f06, #48f); /* Gradient background */
+            color: #333;
+            background-attachment: fixed;
+            position: relative;
+            overflow: hidden;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input, select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result, .planning-result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+        /* Additional styles for colorful and eye-catching elements */
+        .result, .planning-result {
+            color: #FF5722; /* Bright orange for result */
+            background-color: #fff3e0; /* Light peach background */
+            border: 2px solid #FF5722;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        /* Scribble and doodle effect */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgIGhlaWdodD0iMTAwJSIgIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cGF0aCBkPSJNMTAsMTAgTDIwLDEwIEwyMiw0MCBMMywzIE0wLDI4IEwtNywyNCBMMywzIE0sMTAsMkwxMCwxMCBMNSwyMCBMMywyMCBNMTAsMTAgWiIvPjwvc3ZnPg=='); /* Base64 encoded SVG scribbles */
+            z-index: 0;
+            opacity: 0.1; /* Light opacity for subtle effect */
+            pointer-events: none; /* Ensure it doesn't interfere with interactions */
+        }
+        .tax-planning {
+            margin-top: 20px;
+            background-color: #e3f2fd;
+            border: 1px solid #0288d1;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .tax-planning h2 {
+            color: #0288d1;
+            margin-top: 0;
+        }
+        .tax-planning label, .tax-planning input, .tax-planning select {
+            margin-bottom: 15px;
+            display: block;
+        }
+        .tax-planning button {
+            background-color: #0288d1;
+        }
+        .tax-planning button:hover {
+            background-color: #0277bd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tax Calculation and Planning</h1>
+        <form id="taxForm">
+            <label for="ageCategory">Select Age Category:</label>
+            <select id="ageCategory">
+                <option value="normal">Below 60 years</option>
+                <option value="senior">60 years and above</option>
+                <option value="superSenior">80 years and above</option>
+            </select>
+
+            <label for="assessmentYear">Select Assessment Year:</label>
+            <select id="assessmentYear">
+                <option value="2023-24">2023-24</option>
+                <option value="2024-25">2024-25</option>
+                <option value="2025-26">2025-26</option>
+            </select>
+
+            <label for="monthlyIncome">Enter Monthly Income (INR):</label>
+            <input type="number" id="monthlyIncome" required>
+
+            <label for="deductions">Enter total tax-saving investments or deductions (INR):</label>
+            <input type="number" id="deductions" value="0">
+
+            <label for="additionalIncome">Enter monthly additional income (INR):</label>
+            <input type="number" id="additionalIncome" value="0">
+
+            <button type="button" onclick="calculateTax()">Calculate Tax</button>
+        </form>
+        <div class="result" id="result"></div>
+        
+        <div class="tax-planning">
+            <h2>Tax Planning</h2>
+            <form id="planningForm">
+                <label for="investmentType">Select Investment Type:</label>
+                <select id="investmentType">
+                    <option value="0">None</option>
+                    <option value="50000">Section 80C (Max ₹50,000)</option>
+                    <option value="100000">Section 24(b) (Interest on Home Loan)</option>
+                    <option value="50000">Section 10(14) (HRA)</option>
+                    <option value="0">Other Investments</option>
+                </select>
+
+                <label for="additionalInvestments">Enter additional planned investments (INR):</label>
+                <input type="number" id="additionalInvestments" value="0">
+
+                <button type="button" onclick="calculatePlanning()">Calculate Planning</button>
+            </form>
+            <div class="planning-result" id="planningResult"></div>
+        </div>
+    </div>
+
+    <script>
+        function calculateTax() {
+            const ageCategory = document.getElementById('ageCategory').value;
+            const assessmentYear = document.getElementById('assessmentYear').value;
+            const monthlyIncome = parseFloat(document.getElementById('monthlyIncome').value);
+            const deductions = parseFloat(document.getElementById('deductions').value) || 0;
+            const monthlyAdditionalIncome = parseFloat(document.getElementById('additionalIncome').value) || 0;
+
+            if (isNaN(monthlyIncome) || monthlyIncome < 0) {
+                alert("Please enter a valid positive monthly income.");
+                return;
+            }
+
+            const annualIncome = monthlyIncome * 12;
+            const additionalIncome = monthlyAdditionalIncome * 12;
+            const adjustedIncome = Math.max(annualIncome - deductions + additionalIncome, 0);
+
+            const taxBrackets = getTaxBrackets(ageCategory);
+
+            let taxDue = 0;
+            let previousBracket = 0;
+
+            for (const bracket of taxBrackets) {
+                if (adjustedIncome > previousBracket) {
+                    const upperLimit = bracket.upTo || adjustedIncome;
+                    const taxableIncome = Math.min(adjustedIncome, upperLimit) - previousBracket;
+                    taxDue += taxableIncome * bracket.rate;
+                    previousBracket = upperLimit;
+                } else {
+                    break;
+                }
+            }
+
+            document.getElementById('result').textContent = `Annual Tax Due for ${assessmentYear}: ₹${taxDue.toFixed(2)}`;
+        }
+
+        function getTaxBrackets(ageCategory) {
+            if (ageCategory === 'senior') {
+                return [
+                    { upTo: 300000, rate: 0.05 },
+                    { upTo: 600000, rate: 0.1 },
+                    { upTo: 1200000, rate: 0.15 },
+                    { rate: 0.2 }
+                ];
+            } else if (ageCategory === 'superSenior') {
+                return [
+                    { upTo: 500000, rate: 0.05 },
+                    { upTo: 1000000, rate: 0.1 },
+                    { upTo: 2000000, rate: 0.15 },
+                    { rate: 0.2 }
+                ];
+            } else {
+                return [
+                    { upTo: 250000, rate: 0.05 },
+                    { upTo: 500000, rate: 0.1 },
+                    { upTo: 1000000, rate: 0.15 },
+                    { rate: 0.2 }
+                ];
+            }
+        }
+
+        function calculatePlanning() {
+            const investmentType = parseFloat(document.getElementById('investmentType').value) || 0;
+            const additionalInvestments = parseFloat(document.getElementById('additionalInvestments').value) || 0;
+
+            const totalInvestments = investmentType + additionalInvestments;
+
+            document.getElementById('planningResult').textContent = `Total Planned Investments/Deductions: ₹${totalInvestments.toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>
